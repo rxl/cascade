@@ -48,7 +48,7 @@ def get_file_data_and_size(url):
 		opened_file = urllib2.urlopen(url)
 	except:
 		print "the image url could not be opened"
-		return (None, 0)
+		return 0
 	#try:
 	#	size = int(file.headers.get("content-length"))
 	#except:
@@ -77,8 +77,11 @@ def get_images_from_url(url):
 
 	if url.endswith('.jpg') or url.endswith('.png'):
 		size = get_size(url)
-		image = ImageObject(url, None, size)
-		images.append(image)
+		if size > 1:
+			image = ImageObject(url, None, size)
+			images.append(image)
+		else:
+			return None
 	else:
 		html = None
 		try:
@@ -86,7 +89,7 @@ def get_images_from_url(url):
 			undigested_html = page.read()
 			html = BeautifulSoup(undigested_html)
 		except:
-			return "The webpage could not be opened. Make sure you entered a valid URL."
+			return None
 
 		image_tags = html.findAll('img')
 		for image in image_tags:
@@ -124,12 +127,15 @@ def get_largest_image_from_url():
 def display_images():
 	url = request.args.get('url')
 	if url is None:
-		return "Please enter a url."
+		return render_template('try_again.html')
 
 	images = get_images_from_url(url)
 	#for image in images:
 	#	print image.size
-	return render_template('view_images.html', images=images, min_width=MIN_WIDTH, grid_width=GRID_WIDTH)
+	if images is not None and len(images) > 4:
+		return render_template('view_images.html', images=images, min_width=MIN_WIDTH, grid_width=GRID_WIDTH)
+	else:
+		return render_template('try_again.html')
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.

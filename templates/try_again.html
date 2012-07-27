@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Try again{% endblock %}
+
+{% block head %}
+	{{ super() }}
+	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+	<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+	<h2 class="error-message">Sorry! Not enough images were found at this URL. Please try again or use one of our examples.</h2>
+{% endblock %}
