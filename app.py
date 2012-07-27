@@ -130,5 +130,7 @@ def display_images():
 	#	print image.size
 	return render_template('view_images.html', images=images, min_width=MIN_WIDTH, grid_width=GRID_WIDTH)
 
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    # Bind to PORT if defined, otherwise default to 5000.
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
