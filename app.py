@@ -13,35 +13,73 @@ DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-MIN_WIDTH = 200
-GRID_WIDTH = 200
 MIN_IMAGE_SIZE = 10000
+MIN_IMAGE_WIDTH = 100
+MIN_IMAGE_HEIGHT = 100
 
 # SUGGESTED URLS
 # 1. http://500px.com/popular?only=Fine%20Art
 # 2. http://stevemccurry.com/galleries (images don't expand much)
 # 3. http://timothyallen.blogs.bbcearth.com/ (too similar sizes)
 
+
 @app.route("/")
 def hello():
     return render_template('index.html')
 
-def get_size(url):
+
+class ImageObject(object):
+	def __init__(self, src, href, size, width, height):
+		self.src = src
+		self.href = href
+		self.size = size
+		self.width = width
+		self.height = height
+
+"""def getsizes(uri):
+    # get file size *and* image size (None if not known)
+    file = urllib2.urlopen(uri)
+    size = file.headers.get("content-length")
+    if size: size = int(size)
+    p = ImageFile.Parser()
+    while 1:
+        data = file.read(1024)
+        if not data:
+            break
+        p.feed(data)
+        if p.image:
+            return size, p.image.size
+            break
+    file.close()
+    return size, None"""
+
+import getimageinfo
+
+def get_sizes(url):
 	try:
 		opened_file = urllib2.urlopen(url)
 	except:
 		print "the image url could not be opened"
-		return 0
+		return 0, 0, 0
+	
 	try:
+		image_type, width, height = getimageinfo.getImageInfo(opened_file)
+	except:
+		print "the image info could not be found"
+		return 0, 0, 0
+
+	try:
+		#print opened_file.headers.get("content-length")
 		size = int(opened_file.headers.get("content-length"))
 	except:
 		try:
-			size = int(len(opened_file.read()))
+			read_file = opened_file.read()
+			size = int(len(read_file))
 		except:
 			size = 0
 			print "the file size could not be found"
 	opened_file.close()
-	return size
+	return size, width, height
 
 def get_file_data_and_size(url):
 	try:
@@ -66,19 +104,13 @@ def get_file_data_and_size(url):
 	#print size
 	return (file_data, size)
 
-class ImageObject(object):
-	def __init__(self, src, href, size):
-		self.src = src
-		self.href = href
-		self.size = size
-
 def get_images_from_url(url):
 	images = []
 
 	if url.endswith('.jpg') or url.endswith('.png'):
-		size = get_size(url)
-		if size > 1:
-			image = ImageObject(url, None, size)
+		size, width, height = get_sizes(url)
+		if size > 0:
+			image = ImageObject(url, None, size, width, height)
 			images.append(image)
 		else:
 			return None
@@ -97,9 +129,10 @@ def get_images_from_url(url):
 			href = None
 			if image.parent.name == 'a':
 				href = urlparse.urljoin(url, image.parent.get('href'))
-			size = get_size(src)
-			image = ImageObject(src, href, size)
-			if image.size > MIN_IMAGE_SIZE:
+			size, width, height = get_sizes(src)
+			if width > MIN_IMAGE_WIDTH and height > MIN_IMAGE_HEIGHT:
+				print width
+				image = ImageObject(src, href, size, width, height)
 				images.append(image)
 		images.sort(key=lambda x: x.size, reverse=True)
 
@@ -128,12 +161,22 @@ def display_images():
 	url = request.args.get('url')
 	if url is None:
 		return render_template('try_again.html')
+	try:
+		grid_width = int(request.args.get('grid_width'))
+	except:
+		grid_width = 140
 
-	images = get_images_from_url(url)
-	#for image in images:
-	#	print image.size
+	images = []
+
+	url2 = request.args.get('url2')
+	url3 = request.args.get('url3')
+	for current_url in (url, url2, url3):
+		image_batch = get_images_from_url(current_url)
+		if image_batch is not None:
+			images.extend(image_batch)
+
 	if images is not None and len(images) > 4:
-		return render_template('view_images.html', images=images, min_width=MIN_WIDTH, grid_width=GRID_WIDTH)
+		return render_template('view_images.html', images=images, grid_width=grid_width)
 	else:
 		return render_template('try_again.html')
 

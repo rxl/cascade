@@ -4,7 +4,7 @@
 
 {% block head %}
 	{{ super() }}
-	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+	<link href="{{ url_for('static', filename='bootstrap.css') }}" rel="stylesheet" />
 	<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
 {% endblock %}
 
@@ -25,17 +25,44 @@
 					//console.log(newImg);
 					formarea.appendChild(newImg);
 				});
+				$('#center-form-area').delegate('.examplelink', 'click', function() {
+					$('#urltextinput')[0].value = this.text;
+					//$('#submit-button')[0].trigger('submit');
+				});
+				$('#urltextinput').delegate('.examplelink', 'click', function() {
+					$('#url2-input')[0].value = '';
+					$('#url3-input')[0].value = '';
+				});
+				$('#examplelink1').click(function () {
+					$('#grid-width-input')[0].value = '200';
+					$('#url2-input')[0].value = '';
+					$('#url3-input')[0].value = '';					
+				});
+				$('#examplelink2').click(function () {
+					$('#grid-width-input')[0].value = '300';
+					$('#url2-input')[0].value = '';
+					$('#url3-input')[0].value = '';
+				});
+				$('#examplelink3').click(function () {
+					$('#grid-width-input')[0].value = '150';
+					$('#url2-input')[0].value = this.text + '?page=2';
+					$('#url3-input')[0].value = this.text + '?page=3';
+				});
 			});
 		</script>
 		<div style="text-align: center;" id="center-form-area">
 			<form class="form-inline" name="input" action="{{ url_for('display_images') }}" method="get">
-				<input class="input-xxlarge" style="height: 30px;" type="text" name="url" placeholder="URL" />
+				<input class="input-xxlarge" id="urltextinput" style="height: 30px;" type="text" name="url" placeholder="URL" />
+				<input type="hidden" name="grid_width" value="200" id="grid-width-input" />
+				<input type="hidden" name="url2" value="" id="url2-input" />
+				<input type="hidden" name="url3" value="" id="url3-input" />
 				<input type="submit" value="submit" style="height: 40px; width: 100px;" class="btn btn-danger" id="submit-button" />
 			</form>
 			<hr class="soften">
 			<h1 style="color: white;">Try one of these URLs:</h1>
-			<h2>http://500px.com/popular?only=Street</h2>
-			<h2>http://timothyallen.blogs.bbcearth.com/</h2>
+			<h2><a href="#" id="examplelink1" class="examplelink">http://500px.com/popular?only=Street</a></h2>
+			<h2><a href="#" id="examplelink2" class="examplelink">http://timothyallen.blogs.bbcearth.com/</a></h2>
+			<h2><a href="#" id="examplelink3" class="examplelink">http://dribbble.com/twistedfork</a></h2>
 		</div>
 	</div>
 {% endblock %}
