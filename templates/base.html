@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	{% block head %}
+	<link href="{{ url_for('static', filename='reset.css') }}" rel="stylesheet">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<title>{% block title %}{% endblock %}</title>
+	{% endblock %}
+</head>
+<body>
+	{% block content %}
+	{% endblock %}
+</body>
+</html>

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}View Images{% endblock %}
+
+{% block head %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='jquery.isotope.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='jquery.imagesloaded.js') }}"></script>
+	<link href="{{ url_for('static', filename='isotope-images.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='lightbox.css') }}" rel="stylesheet" />
+	<script src="{{ url_for('static', filename='lightbox.js') }}"></script>
+	<script>
+		$(function(){
+			var $container = $('#container');
+			function hasClass(element, cls) {
+    			return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+			}
+
+			$container.imagesLoaded( function(){
+				$container.isotope({
+					itemSelector : '.element'
+				});
+				// change size of clicked element
+				$container.delegate('.get-larger-image', 'click', function() {
+					console.log($(this));
+
+					var parentNode = $(this)[0].parentNode;
+					//console.log(parentNode);
+					var imgtag = parentNode.children[0];
+					var lightboxtag = parentNode.children[1];
+					var grabbingtag = parentNode.children[2];
+					var getimagetag = parentNode.children[3];
+					parentNode.setAttribute('get-larger-image-clicked', 'true');
+					if (!hasClass(parentNode, "larger-image-loaded")) {
+						parentNode.className += ' larger-image-loaded';
+						getimagetag.parentNode.removeChild(getimagetag);
+						grabbingtag.style.display = 'block';
+						var lightbox_barcode = lightboxtag.getAttribute('barcode');
+						var newImg = document.createElement("img");
+						newImg.src = "/static/images/loading.gif";
+						newImg.className += " spinner";
+						newImg.setAttribute('barcode', lightbox_barcode + 'S');
+						//console.log(newImg);
+						parentNode.appendChild(newImg);
+						getLargestImageFromURL(imgtag.getAttribute('originalhref'), lightbox_barcode);
+					}
+				});
+				$container.delegate( '.element', 'click', function(){
+					//console.log($(this));
+
+					var divtag = $(this)[0];
+					var imgtag = divtag.children[0];
+					var lightboxtag = divtag.children[1];
+					if (divtag.getAttribute('get-larger-image-clicked') != 'true') {
+						if (!$(this).hasClass("expanded")) {
+							if (imgtag.width < imgtag.naturalWidth) {
+								imgtag.width = imgtag.naturalWidth;
+								imgtag.height = imgtag.naturalHeight;
+								divtag.style.width = imgtag.naturalWidth + 'px';
+								divtag.style.height = imgtag.naturalHeight + 'px';
+							}
+							if (!$(this).hasClass("larger-image-loaded")) {
+								var getimagetag = divtag.children[3];
+								if (getimagetag) {
+									getimagetag.style.display = 'block';
+								}
+							} else {
+								//console.log(lightboxtag);
+								lightboxtag.style.display = 'block';
+							}
+						} else {
+							imgtag.width = {{ grid_width }};
+							imgtag.height = {{ grid_width }}*(imgtag.naturalHeight/imgtag.naturalWidth);
+							divtag.style.width = imgtag.width + 'px';
+							divtag.style.height = imgtag.height + 'px';
+							
+							if (!$(this).hasClass("larger-image-loaded")) {
+								var getimagetag = divtag.children[3];
+								if (getimagetag) {
+									getimagetag.style.display = 'none';
+								}
+							} else {
+								//console.log(lightboxtag);
+								lightboxtag.style.display = 'none';
+							}
+						}
+						$container.isotope('reLayout');
+						$(this).toggleClass('expanded');
+					}
+					divtag.setAttribute('get-larger-image-clicked', 'false');
+				});
+			});
+		});
+		function getLargestImageError(data) {
+			//console.log(data.error);
+		}
+		function getLargestImageSuccess(data) {
+			//console.log(data.src);
+			//console.log(data.barcode);
+			$(container).find("[barcode='" + data.barcode + "G']").each(function() {
+				this.style.display = 'none';
+			});
+			$(container).find("[barcode='" + data.barcode + "']").each(function() {
+				//console.log(this);
+				this.style.display = 'block';
+				this.setAttribute('href', data.src);
+				this.setAttribute('rel', 'lightbox');
+			});
+			$(container).find("[barcode='" + data.barcode + "S']").each(function() {
+				this.parentNode.removeChild(this);
+			});
+		}
+		function getLargestImageFromURL(url, barcode) {
+			//console.log(url);
+			//console.log(barcode);
+			$.ajax({
+				'type' : 'POST',
+				'url' : '/getlargestimage/',
+				'dataType' : 'JSON',
+				'data' : {
+					'url' : url,
+					'barcode' : barcode
+				},
+				'success' : getLargestImageSuccess,
+				'error' : getLargestImageError
+			});
+		}
+	</script>
+{% endblock %}
+
+{% block content %}
+	<div id="container" class="clickable clearfix">
+		<div class="element" style="width: 0px; height: 0px; margin: 1px;">
+		</div>
+		{% set barcode_counter = 101 -%}
+		{% for image in images %}
+		<div class="element">
+			{% if image.href != None %}
+				<img width="{{ grid_width }}px" src="{{ image.src }}" barcode="{{ barcode_counter }}I" originalhref="{{ image.href }}" />
+				<a href="#" target="_blank" class="expand-link" barcode="{{ barcode_counter }}A">view in lightbox</a>
+				<span class="grabbing-image" barcode="{{ barcode_counter }}AG">grabbing larger image from url</span>
+				<a href="#" class="get-larger-image" barcode="{{ barcode_counter }}AGE">get larger image from url</a>
+			{% else %}
+				<img src="{{ image.src }}" width="{{ grid_width }}px" />
+			{% endif %}
+		</div>
+			{% set barcode_counter = barcode_counter + 1 -%}
+		{% endfor %}
+	</div>
+{% endblock %}

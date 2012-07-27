@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Index{% endblock %}
+
+{% block head %}
+	{{ super() }}
+	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+	<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+	<h2 style="font-family: cursive; text-align: center; margin-left: auto; margin-right: auto; width: 1000px;">cascade</h2>
+    <div class="container page">
+       	<header class="jumbotron masthead">
+       		<div class="inner">
+				<h1>Grab & display images from any url.</h1>
+			</div>
+		</header>
+		<script>
+			$(function(){
+				$('#submit-button').click(function() {
+					var formarea = document.getElementById('center-form-area');
+					var newImg = document.createElement("img");
+					newImg.src = "/static/images/loading.gif";
+					//console.log(newImg);
+					formarea.appendChild(newImg);
+				});
+			});
+		</script>
+		<div style="text-align: center;" id="center-form-area">
+			<form class="form-inline" name="input" action="{{ url_for('display_images') }}" method="get">
+				<input class="input-xlarge" type="text" name="url" placeholder="URL" />
+				<input type="submit" value="submit" class="btn btn-danger" id="submit-button" />
+			</form>
+			<hr class="soften">
+			<h1>Try one of these URLs:</h1>
+			<h2>http://500px.com/popular?only=Street</h2>
+			<h2>http://timothyallen.blogs.bbcearth.com/</h2>
+		</div>
+	</div>
+{% endblock %}
