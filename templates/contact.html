@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Try again{% endblock %}
+
+{% block head %}
+	{{ super() }}
+	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+	<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+	<div class="message">
+		<h2 class="contact-message">Contact me at</h2>
+		<img src="{{ url_for('static', filename='images/email.png') }}" />
+	</div>
+{% endblock %}

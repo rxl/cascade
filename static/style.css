@@ -87,6 +87,13 @@ hr.soften {
   border: 0;
 }
 
+.message {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 800px;
+}
+
 .brand {
   font-family: cursive;
   text-align: center;
@@ -101,5 +108,9 @@ hr.soften {
   margin-left: auto;
   margin-right: auto;
   width: 800px;
+}
+
+.contact-message {
+  font-family: cursive;
 }
 

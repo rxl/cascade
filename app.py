@@ -8,7 +8,7 @@ import urlparse
 #import mechanize
 import json
 
-DEBUG = True
+DEBUG = False
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -27,6 +27,9 @@ MIN_IMAGE_HEIGHT = 100
 def hello():
     return render_template('index.html')
 
+@app.route("/contact")
+def contact():
+    return render_template('contact.html')
 
 class ImageObject(object):
 	def __init__(self, src, href, size, width, height):
